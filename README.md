@@ -1,4 +1,4 @@
-# br_platformio_hwfef
+# br_platformio_hwdef
 
 PlatformIO platform package containing board definitions, variants, and upload scripts for Beyond Robotix hardware.
 
@@ -10,16 +10,26 @@ PlatformIO platform package containing board definitions, variants, and upload s
 | CoreNode | STM32H743 | 480 MHz | 2 MB |
 | MicroNodePlus | STM32H723 | 550 MHz | 1 MB |
 
+## First-time setup
+
+PlatformIO needs the board definitions present before it can resolve packages, so a one-time global install is required on each machine:
+
+```sh
+pio pkg install -g -t "git+https://github.com/BeyondRobotix/br_platformio_hwdef.git"
+```
+
+After that, `pio run` handles everything automatically and will keep the package up to date.
+
 ## Usage
 
-Add the following to your `platformio.ini`. PlatformIO will clone this package into its global cache on first build — no files are added to your project.
+Add the following to your `platformio.ini`. No files are added to your project.
 
 ```ini
 [platformio]
 boards_dir = ${platformio.packages_dir}/br-boards/boards
 
 [env]
-platform_packages = br-boards @ git+https://github.com/BeyondRobotix/br_platformio_hwfef.git
+platform_packages = br-boards @ git+https://github.com/BeyondRobotix/br_platformio_hwdef.git
 board_build.variants_dir = ${platformio.packages_dir}/br-boards/variants
 ```
 
