@@ -7,8 +7,8 @@ import subprocess
 # If Windows, use .exe. If Linux/Mac, use no extension.
 openocd_exec = "openocd.exe" if sys.platform.startswith("win") else "openocd"
 
-bootloader_path = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "MicroNodeBootloader.bin")
+bootloader_path = os.path.join(
+    env.subst("$PROJECT_PACKAGES_DIR"), "br-boards", "MicroNodeBootloader.bin"
 ).replace("\\", "/")
 
 firmware_path = os.path.abspath(
