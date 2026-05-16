@@ -113,6 +113,13 @@
   #define PIN_WIRE_SCL          PB13
 #endif
 
+#ifndef PIN_WIRE1_SDA
+  #define PIN_WIRE1_SDA         PB4
+#endif
+#ifndef PIN_WIRE1_SCL
+  #define PIN_WIRE1_SCL         PA7
+#endif
+
 // Timer Definitions
 // Use TIM6/TIM7 when possible as servo and tone don't need GPIO output pin
 #ifndef TIMER_TONE
