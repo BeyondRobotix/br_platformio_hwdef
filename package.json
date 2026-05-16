@@ -1,0 +1,8 @@
+{
+  "name": "br-boards",
+  "version": "1.0.0",
+  "description": "Beyond Robotix custom board definitions, variants, and upload scripts",
+  "keywords": ["beyondrobotix", "stm32", "platformio"],
+  "homepage": "https://github.com/BeyondRobotix/br_platformio_hwfef",
+  "license": "MIT"
+}
