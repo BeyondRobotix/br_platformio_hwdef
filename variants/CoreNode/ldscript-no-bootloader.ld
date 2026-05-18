@@ -47,11 +47,17 @@ _estack = ORIGIN(RAM_D1) + LENGTH(RAM_D1);    /* end of RAM_D1 */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
-/* Specify the memory areas */
+/*
+ * Standalone CoreNode layout (no bootloader). FLASH starts at 0x08000000.
+ * BOOTCOM (0x20000000, 256 B) is reserved anyway so the IPC region matches
+ * the bootloader-aware build -- a standalone app can be re-linked against
+ * `ldscript.ld` later without changing its source.
+ */
 MEMORY
 {
+  BOOTCOM (rw)   : ORIGIN = 0x20000000, LENGTH = 0x100
   FLASH (rx)     : ORIGIN = 0x08000000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - LD_FLASH_OFFSET
-  DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 128K
+  DTCMRAM (xrw)  : ORIGIN = 0x20000100, LENGTH = 128K - 0x100
   RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = LD_MAX_DATA_SIZE
   RAM_D2 (xrw)   : ORIGIN = 0x30000000, LENGTH = 288K
   RAM_D3 (xrw)   : ORIGIN = 0x38000000, LENGTH = 64K

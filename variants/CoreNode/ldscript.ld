@@ -48,10 +48,18 @@ _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
+/*
+ * Bootloader-aware layout for CoreNode (STM32H743XI).
+ * FLASH starts at 0x08020000 (H7 sector-1 boundary) -- the first sector is
+ * reserved for BR_bootloader. BOOTCOM (0x20000000, 256 B) is the IPC region
+ * shared with the bootloader. Previously this script used 0x0800A000 (the
+ * L4 offset) which would overlap the bootloader on H7.
+ */
 MEMORY
 {
-  FLASH (rx)     : ORIGIN = 0x0800A000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - LD_FLASH_OFFSET
-  DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 128K
+  BOOTCOM (rw)   : ORIGIN = 0x20000000, LENGTH = 0x100
+  FLASH (rx)     : ORIGIN = 0x08020000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - 0x20000 - LD_FLASH_OFFSET
+  DTCMRAM (xrw)  : ORIGIN = 0x20000100, LENGTH = 128K - 0x100
   RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = LD_MAX_DATA_SIZE
   RAM_D2 (xrw)   : ORIGIN = 0x30000000, LENGTH = 288K
   RAM_D3 (xrw)   : ORIGIN = 0x38000000, LENGTH = 64K

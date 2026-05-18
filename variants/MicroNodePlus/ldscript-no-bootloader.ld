@@ -1,15 +1,12 @@
 /*
 ******************************************************************************
 **
-**  Linker script for STM32H723ZGT6 (MicroNodePlus) -- bootloader-aware.
+**  Linker script for STM32H723ZGT6 (MicroNodePlus) -- standalone (no bootloader).
 **
-**  FLASH starts at 0x08020000 -- 128 KB past the start of flash, which is the
-**  H7's sector-1 boundary. The first sector (0x08000000-0x0801FFFF) is owned
-**  by BR_bootloader; placing the app on the next sector means the bootloader
-**  is never disturbed when the app region is erased. BOOTCOM (0x20000000,
-**  256 B) is the IPC region shared with the bootloader.
-**
-**  For standalone (no-bootloader) builds, use `ldscript-no-bootloader.ld`.
+**  FLASH starts at 0x08000000 -- the application IS the only firmware on the
+**  chip. BOOTCOM region (0x20000000, 256 B) is reserved in DTCMRAM so the
+**  IPC layout matches the bootloader-aware build; an app linked here can be
+**  re-built against `ldscript.ld` later without changing its source.
 **
 *****************************************************************************
 */
@@ -25,7 +22,7 @@ MEMORY
   ITCMRAM (xrw)    : ORIGIN = 0x00000000, LENGTH = 64K
   BOOTCOM (rw)     : ORIGIN = 0x20000000, LENGTH = 0x100
   DTCMRAM (xrw)    : ORIGIN = 0x20000100, LENGTH = 128K - 0x100
-  FLASH    (rx)    : ORIGIN = 0x08020000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - 0x20000 - LD_FLASH_OFFSET
+  FLASH    (rx)    : ORIGIN = 0x08000000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - LD_FLASH_OFFSET
   RAM_D1  (xrw)    : ORIGIN = 0x24000000, LENGTH = LD_MAX_DATA_SIZE
   RAM_D2  (xrw)    : ORIGIN = 0x30000000, LENGTH = 32K
   RAM_D3  (xrw)    : ORIGIN = 0x38000000, LENGTH = 16K
