@@ -26,7 +26,8 @@ if not board_config.get("build.variants_dir", ""):
 # the SCons env before this framework script ran -- updating only
 # board_config wouldn't reach the linker.
 ldscript = board_config.get("build.ldscript", "")
-if ldscript and os.sep not in ldscript and "/" not in ldscript:
+ldscript_is_bare = bool(ldscript) and os.sep not in ldscript and "/" not in ldscript
+if ldscript_is_bare:
     abs_ldscript = join(platform_dir, "variants", variant, ldscript)
     board_config.update("build.ldscript", abs_ldscript)
     env.Replace(LDSCRIPT_PATH=abs_ldscript)
@@ -42,11 +43,21 @@ if not isfile(build_script):
 
 SConscript(build_script)
 
-# Auto-register the two-stage bootloader+app upload for any env whose name
-# contains "Bootloader".  This replaces the explicit extra_scripts entry that
-# consumers used to need in their platformio.ini.
+# Auto-register the two-stage bootloader+app upload for app envs that boot
+# through a bootloader.  Identified by:
+#   - env name ends with "-Bootloader" (but not "No-Bootloader")
+#   - the ldscript is a platform-resolved bare name (a project-local linker
+#     script like BR_bootloader's "linker/bootloader_l4.ld" means this is a
+#     bootloader project itself, which flashes its own bin directly).
+# Both conditions must hold so that *-No-Bootloader app envs and bootloader
+# *projects* don't accidentally trigger the two-stage flash.
 pioenv = env.subst("$PIOENV")
-if "Bootloader" in pioenv:
+is_app_bootloader_env = (
+    pioenv.endswith("-Bootloader")
+    and "No-Bootloader" not in pioenv
+    and ldscript_is_bare
+)
+if is_app_bootloader_env:
     upload_script = join(platform_dir, "upload_bootloader_app.py")
     if isfile(upload_script):
         Export("env")
