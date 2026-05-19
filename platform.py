@@ -4,7 +4,7 @@ except ImportError:
     from platformio.managers.platform import PlatformBase
 
 
-class BrStm32Platform(PlatformBase):
+class Brstm32Platform(PlatformBase):
 
     def configure_default_packages(self, variables, targets):
         frameworks = variables.get("pioframework", [])
