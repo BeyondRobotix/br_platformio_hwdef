@@ -1,6 +1,6 @@
 # br_platformio_hwdef
 
-PlatformIO platform package containing board definitions, variants, and upload scripts for Beyond Robotix hardware.
+PlatformIO platform (`br-stm32`) providing board definitions, variants, linker scripts, and bundled bootloader binaries for Beyond Robotix STM32 hardware.
 
 ## Supported boards
 
@@ -10,65 +10,41 @@ PlatformIO platform package containing board definitions, variants, and upload s
 | CoreNode | STM32H743 | 480 MHz | 2 MB |
 | MicroNodePlus | STM32H723 | 550 MHz | 1 MB |
 
-## First-time setup
-
-PlatformIO needs the board definitions present before it can resolve packages, so a one-time global install is required on each machine:
-
-```sh
-pio pkg install -g -t "git+https://github.com/BeyondRobotix/br_platformio_hwdef.git"
-```
-
-After that, `pio run` handles everything automatically and will keep the package up to date.
-
 ## Usage
 
-Add the following to your `platformio.ini`. No files are added to your project.
-
-```ini
-[platformio]
-boards_dir = ${platformio.packages_dir}/br-boards/boards
-
-[env]
-platform_packages = br-boards @ git+https://github.com/BeyondRobotix/br_platformio_hwdef.git
-board_build.variants_dir = ${platformio.packages_dir}/br-boards/variants
-```
-
-Then select a board as normal:
+Reference the platform from your `platformio.ini`. PlatformIO downloads it on first build — nothing to install.
 
 ```ini
 [env:my-env]
-platform = ststm32
+platform = https://github.com/BeyondRobotix/br_platformio_hwdef.git
 board = MicroNode       ; or CoreNode, MicroNodePlus
 framework = arduino
-board_build.ldscript = ${platformio.packages_dir}/br-boards/variants/MicroNode/ldscript.ld
+board_build.ldscript = ldscript.ld
 ```
+### Bootloader-aware envs (two-stage flash)
 
-### Bootloader upload
-
-To flash the bootloader and application in a single ST-Link step, add the bundled upload script:
+Any env whose name ends in `-Bootloader` (and does not contain `No-Bootloader`) using a bare ldscript automatically gets a two-stage flash on `pio run -t upload`: first the bundled `variants/<board>/bootloader.bin` at `0x08000000`, then the compiled app at the board's app-start address. No `extra_scripts` entry needed.
 
 ```ini
-extra_scripts = ${platformio.packages_dir}/br-boards/upload_bootloader_app.py
-board_build.ldscript = ${platformio.packages_dir}/br-boards/variants/<Board>/ldscript.ld
+[env:Micro-Node-Bootloader]
+platform = https://github.com/BeyondRobotix/br_platformio_hwdef.git
+board = MicroNode
+framework = arduino
+board_build.ldscript = ldscript.ld
 ```
 
-The script dispatches off the env's `board` setting to pick the right OpenOCD target, the per-board bootloader binary from `variants/<Board>/bootloader.bin`, and the per-board app flash address (`0x0800A000` for L4, `0x08020000` for H7). Works on all three boards.
+## Refreshing the cached platform
 
-For a standalone app build (no bootloader), use the matching `ldscript-no-bootloader.ld` and omit `extra_scripts`.
+PlatformIO caches the platform locally after the first fetch. To pick up new changes to this repo:
 
-## Package contents
-
-```
-boards/                              Board JSON definitions
-variants/
-  MicroNode/
-    bootloader.bin                   Pre-compiled bootloader (STM32L431)
-    ldscript.ld                      Bootloader-aware linker script (app @ 0x0800A000)
-    ldscript-no-bootloader.ld        Standalone linker script (app @ 0x08000000)
-    (pin map, peripheral config)
-  MicroNodePlus/                     same layout (STM32H723)
-  CoreNode/                          same layout (STM32H743)
-upload_bootloader_app.py             PlatformIO extra_script for two-stage bootloader flash
+```sh
+pio pkg uninstall --platform br-stm32 -g
 ```
 
-The bootloader binaries are built from [BR_bootloader](https://github.com/BeyondRobotix/BR_bootloader) and refreshed via `tools/distribute_bins.py` in the mono root.
+…or delete the platform directory directly:
+
+- Linux/macOS: `~/.platformio/platforms/br-stm32/`
+- Windows: `%USERPROFILE%\.platformio\platforms\br-stm32\`
+
+The next `pio run` re-fetches from GitHub.
+
