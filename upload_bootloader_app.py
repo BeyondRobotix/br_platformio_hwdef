@@ -45,7 +45,9 @@ openocd_exec = "openocd.exe" if sys.platform.startswith("win") else "openocd"
 packages_dir = env.subst("$PROJECT_PACKAGES_DIR")
 build_dir    = env.subst("$BUILD_DIR")
 
-bootloader_path = os.path.join(packages_dir, "br-boards", "variants", bootloader_rel).replace("\\", "/")
+# Bootloader binary lives alongside this script in the platform's variants/ dir.
+platform_dir  = os.path.dirname(os.path.abspath(__file__))
+bootloader_path = os.path.join(platform_dir, "variants", bootloader_rel).replace("\\", "/")
 firmware_path   = os.path.abspath(os.path.join(build_dir, "firmware.bin")).replace("\\", "/")
 elf_path        = os.path.join(build_dir, "firmware.elf")
 

@@ -43,24 +43,32 @@ framework = arduino
 board_build.ldscript = ${platformio.packages_dir}/br-boards/variants/MicroNode/ldscript.ld
 ```
 
-### Bootloader upload (MicroNode only)
+### Bootloader upload
 
-To flash the bootloader and application in a single step, add the bundled upload script:
+To flash the bootloader and application in a single ST-Link step, add the bundled upload script:
 
 ```ini
 extra_scripts = ${platformio.packages_dir}/br-boards/upload_bootloader_app.py
+board_build.ldscript = ${platformio.packages_dir}/br-boards/variants/<Board>/ldscript.ld
 ```
 
-This flashes `MicroNodeBootloader.bin` to `0x8000000` followed by the compiled firmware to `0x800A000` via OpenOCD/ST-Link.
+The script dispatches off the env's `board` setting to pick the right OpenOCD target, the per-board bootloader binary from `variants/<Board>/bootloader.bin`, and the per-board app flash address (`0x0800A000` for L4, `0x08020000` for H7). Works on all three boards.
+
+For a standalone app build (no bootloader), use the matching `ldscript-no-bootloader.ld` and omit `extra_scripts`.
 
 ## Package contents
 
 ```
-boards/                  Board JSON definitions
+boards/                              Board JSON definitions
 variants/
-  MicroNode/             Pin map, peripheral config, linker scripts
-  CoreNode/
-  MicroNodePlus/
-MicroNodeBootloader.bin  Pre-compiled bootloader for MicroNode (STM32L431)
-upload_bootloader_app.py PlatformIO extra_script for two-stage bootloader flash
+  MicroNode/
+    bootloader.bin                   Pre-compiled bootloader (STM32L431)
+    ldscript.ld                      Bootloader-aware linker script (app @ 0x0800A000)
+    ldscript-no-bootloader.ld        Standalone linker script (app @ 0x08000000)
+    (pin map, peripheral config)
+  MicroNodePlus/                     same layout (STM32H723)
+  CoreNode/                          same layout (STM32H743)
+upload_bootloader_app.py             PlatformIO extra_script for two-stage bootloader flash
 ```
+
+The bootloader binaries are built from [BR_bootloader](https://github.com/BeyondRobotix/BR_bootloader) and refreshed via `tools/distribute_bins.py` in the mono root.
