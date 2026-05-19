@@ -12,7 +12,7 @@ variant = board_config.get("build.variant", "")
 # Inject variants_dir → this platform's variants/ directory, unless the
 # consumer has already set board_build.variants_dir to something custom.
 if not board_config.get("build.variants_dir", ""):
-    board_config["build"]["variants_dir"] = join(platform_dir, "variants")
+    board_config.update("build.variants_dir", join(platform_dir, "variants"))
 
 # Resolve a bare ldscript filename (no path separator) to the absolute path
 # inside this platform's variant directory, so consumers can write just
@@ -22,7 +22,7 @@ if not board_config.get("build.variants_dir", ""):
 # to resolve relative to the project directory.
 ldscript = board_config.get("build.ldscript", "")
 if ldscript and os.sep not in ldscript and "/" not in ldscript:
-    board_config["build"]["ldscript"] = join(platform_dir, "variants", variant, ldscript)
+    board_config.update("build.ldscript", join(platform_dir, "variants", variant, ldscript))
 
 # Delegate to framework-arduinoststm32's build script.
 build_script = join(
