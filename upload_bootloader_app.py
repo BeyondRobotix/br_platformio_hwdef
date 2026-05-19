@@ -46,7 +46,9 @@ packages_dir = env.subst("$PROJECT_PACKAGES_DIR")
 build_dir    = env.subst("$BUILD_DIR")
 
 # Bootloader binary lives alongside this script in the platform's variants/ dir.
-platform_dir  = os.path.dirname(os.path.abspath(__file__))
+# __file__ isn't defined for scripts loaded via SCons.SConscript, so use the
+# platform helper instead.
+platform_dir = env.PioPlatform().get_dir()
 bootloader_path = os.path.join(platform_dir, "variants", bootloader_rel).replace("\\", "/")
 firmware_path   = os.path.abspath(os.path.join(build_dir, "firmware.bin")).replace("\\", "/")
 elf_path        = os.path.join(build_dir, "firmware.elf")
