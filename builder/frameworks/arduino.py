@@ -20,9 +20,16 @@ if not board_config.get("build.variants_dir", ""):
 # install path.  Paths that contain a separator (e.g. "linker/bootloader_l4.ld")
 # are left untouched so BR_bootloader's project-local linker scripts continue
 # to resolve relative to the project directory.
+#
+# We also have to refresh LDSCRIPT_PATH because PlatformIO core
+# (LoadPioPlatform) already copied the raw board_build.ldscript value into
+# the SCons env before this framework script ran -- updating only
+# board_config wouldn't reach the linker.
 ldscript = board_config.get("build.ldscript", "")
 if ldscript and os.sep not in ldscript and "/" not in ldscript:
-    board_config.update("build.ldscript", join(platform_dir, "variants", variant, ldscript))
+    abs_ldscript = join(platform_dir, "variants", variant, ldscript)
+    board_config.update("build.ldscript", abs_ldscript)
+    env.Replace(LDSCRIPT_PATH=abs_ldscript)
 
 # Delegate to framework-arduinoststm32's build script.
 build_script = join(

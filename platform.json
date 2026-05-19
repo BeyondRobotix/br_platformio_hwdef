@@ -38,6 +38,11 @@
       "owner": "platformio",
       "version": "~2.60300.0"
     },
+    "framework-cmsis-dsp": {
+      "type": "framework",
+      "owner": "platformio",
+      "version": "~1.16.2"
+    },
     "tool-openocd": {
       "type": "uploader",
       "owner": "platformio",
