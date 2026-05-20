@@ -53,8 +53,7 @@ SConscript(build_script)
 # *projects* don't accidentally trigger the two-stage flash.
 pioenv = env.subst("$PIOENV")
 is_app_bootloader_env = (
-    pioenv.endswith("-Bootloader")
-    and "No-Bootloader" not in pioenv
+    pioenv.endswith("-App")
     and ldscript_is_bare
 )
 if is_app_bootloader_env:
