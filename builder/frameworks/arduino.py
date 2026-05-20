@@ -45,11 +45,11 @@ SConscript(build_script)
 
 # Auto-register the two-stage bootloader+app upload for app envs that boot
 # through a bootloader.  Identified by:
-#   - env name ends with "-Bootloader" (but not "No-Bootloader")
+#   - env name ends with "-App"
 #   - the ldscript is a platform-resolved bare name (a project-local linker
 #     script like BR_bootloader's "linker/bootloader_l4.ld" means this is a
 #     bootloader project itself, which flashes its own bin directly).
-# Both conditions must hold so that *-No-Bootloader app envs and bootloader
+# Both conditions must hold so that *-No-Bootloader envs and bootloader
 # *projects* don't accidentally trigger the two-stage flash.
 pioenv = env.subst("$PIOENV")
 is_app_bootloader_env = (
