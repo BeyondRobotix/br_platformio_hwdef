@@ -107,4 +107,16 @@ def custom_upload(source, target, env):
         env.Exit(1)
 
 
-env.Replace(UPLOADCMD=custom_upload)
+# Install the custom UPLOADCMD via a pre-action on the "upload" alias rather
+# than a direct env.Replace().  This SConscript is loaded from the framework
+# script (arduino.py), which runs during env.BuildProgram() in the platform's
+# main.py -- *before* the stlink/openocd branch later in main.py re-Replaces
+# UPLOADCMD to the stock "$UPLOADER $UPLOADERFLAGS" string.  A direct Replace
+# here would be clobbered.  The pre-action fires at upload-execute time, after
+# all SConscript evaluation, so our value sticks long enough for SCons to
+# substitute $UPLOADCMD on the upload action body.
+def _install_custom_uploadcmd(target, source, env):
+    env.Replace(UPLOADCMD=custom_upload)
+
+
+env.AddPreAction("upload", _install_custom_uploadcmd)
