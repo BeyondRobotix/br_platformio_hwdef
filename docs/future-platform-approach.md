@@ -34,7 +34,7 @@ automatically. No separate install step.
 `platformio.ini` would simplify to:
 
 ```ini
-[env:Micro-Node-Bootloader]
+[env:Micro-Node-App]
 platform = https://github.com/BeyondRobotix/br_platformio_hwdef.git
 board = MicroNode
 framework = arduino

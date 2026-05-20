@@ -26,7 +26,7 @@ board_build.ldscript = ldscript.ld
 Any env whose name ends in `-Bootloader` (and does not contain `No-Bootloader`) using a bare ldscript automatically gets a two-stage flash on `pio run -t upload`: first the bundled `variants/<board>/bootloader.bin` at `0x08000000`, then the compiled app at the board's app-start address. No `extra_scripts` entry needed.
 
 ```ini
-[env:Micro-Node-Bootloader]
+[env:Micro-Node-App]
 platform = https://github.com/BeyondRobotix/br_platformio_hwdef.git
 board = MicroNode
 framework = arduino
