@@ -179,7 +179,13 @@ extern "C" {
   * @param  None
   * @retval None
   */
-WEAK void SystemClock_Config(void)
+// NOT WEAK: generic_clock.c in this variant dir also compiles (the board JSON
+// defines ARDUINO_GENERIC_H723ZGTX alongside ARDUINO_NUCLEO_H723ZG) and its
+// WEAK HSI-based SystemClock_Config wins archive link order over a WEAK one
+// here. This config must be the one that runs: it clocks the PLLs from the
+// external HSE (crystal-grade), which CAN-FD's data-phase oscillator-tolerance
+// budget (~0.5% at 4 Mbps) requires — the HSI's ~±1% trim is not good enough.
+void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {};
@@ -235,7 +241,8 @@ WEAK void SystemClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC | RCC_PERIPHCLK_USB;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC | RCC_PERIPHCLK_USB
+                                             | RCC_PERIPHCLK_FDCAN;
   PeriphClkInitStruct.PLL2.PLL2M = 1;
   PeriphClkInitStruct.PLL2.PLL2N = 24;
   PeriphClkInitStruct.PLL2.PLL2P = 2;
@@ -246,6 +253,11 @@ WEAK void SystemClock_Config(void)
   PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
   PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL2;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+  // FDCAN kernel clock must divide evenly into the CAN-FD bit rates. PLL1Q is
+  // 137.5 MHz (550 MHz VCO / 4), which cannot produce an exact 4 Mbps data
+  // phase (137.5/4 = 34.375 time quanta). PLL2Q = 192 MHz VCO / 2 = 96 MHz
+  // divides exactly for both 1 Mbps arbitration and 4 Mbps data.
+  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
     Error_Handler();
   }
