@@ -240,7 +240,14 @@ const uint32_t analogInputPin[] = {
  * @param  None
  * @retval None
  */
-WEAK void SystemClock_Config(void)
+// NOT WEAK: generic_clock.c also defines a WEAK SystemClock_Config; making this
+// one strong forces the board-specific (HSE) config to win the link. CAN-FD
+// needs a crystal-accurate FDCAN kernel clock — the HSI source is ~1% off and
+// bus-offs the data phase. Same pattern as MicroNodePlus.
+// (History: an earlier version of this function called HAL_RCCEx_PeriphCLKConfig
+//  twice — once before all peripheral clock sources were set — which deadlocked.
+//  It now matches generic_clock.c: set every *ClockSelection, then call once.)
+void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {};
@@ -280,17 +287,21 @@ WEAK void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON; // 24 MHz crystal on CoreNode (HSERDY verified via SWD)
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.CSIState = RCC_CSI_ON;
   RCC_OscInitStruct.CSICalibrationValue = RCC_CSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 60;
+  // Source PLL1 from the 24 MHz HSE: VCO = 24/M(2) * N(80) = 960 MHz ->
+  // P(2) = 480 MHz sysclk, Q(8) = 120 MHz FDCAN kernel (divides exactly to
+  // 1/2/4/8 Mbps). HSI was ~1% off and bus-offed the 4 Mbps data phase.
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 2;
+  RCC_OscInitStruct.PLL.PLLN = 80;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
   RCC_OscInitStruct.PLL.PLLR = 2;
@@ -324,14 +335,24 @@ WEAK void SystemClock_Config(void)
    */
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC | RCC_PERIPHCLK_CEC | RCC_PERIPHCLK_CKPER | RCC_PERIPHCLK_HRTIM1 | RCC_PERIPHCLK_I2C123 | RCC_PERIPHCLK_I2C4 | RCC_PERIPHCLK_LPTIM1 | RCC_PERIPHCLK_LPTIM2 | RCC_PERIPHCLK_LPTIM3 | RCC_PERIPHCLK_QSPI | RCC_PERIPHCLK_SDMMC | RCC_PERIPHCLK_USB | RCC_PERIPHCLK_SPI123 | RCC_PERIPHCLK_SPI45 | RCC_PERIPHCLK_SPI6 | RCC_PERIPHCLK_LPUART1 | RCC_PERIPHCLK_USART16 | RCC_PERIPHCLK_USART234578 | RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_FDCAN;
 
-  /** Initializes the CANBUS peripherals clock
-   */
-
-  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  // FDCAN kernel clock = PLL2Q = 96 MHz (HSE 24/M3 = 8 MHz, *N24 = 192 VCO,
+  // /Q2 = 96). 96 MHz divides into 1/2/4/8 Mbps with prescaler 1 (BRP=1), which
+  // CAN-FD's transmitter delay compensation requires — PLL1Q (120 MHz) forces
+  // BRP=2 at 2 Mbps (120/2M = 60 TQ > the 49 max), breaking TDC. Same FDCAN
+  // clock as MicroNodePlus (PLL2Q 96 MHz). PLL1Q (120 MHz) still feeds the other
+  // PLL-sourced peripherals below.
+  // Set every *ClockSelection (and PLL2) BEFORE the single
+  // HAL_RCCEx_PeriphCLKConfig call — calling it early (other selections still 0)
+  // is what previously deadlocked the board.
+  PeriphClkInitStruct.PLL2.PLL2M = 3;   // 24 MHz HSE / 3 = 8 MHz PLL2 input
+  PeriphClkInitStruct.PLL2.PLL2N = 24;  // 8 * 24 = 192 MHz VCO
+  PeriphClkInitStruct.PLL2.PLL2P = 2;
+  PeriphClkInitStruct.PLL2.PLL2Q = 2;   // 192 / 2 = 96 MHz -> FDCAN
+  PeriphClkInitStruct.PLL2.PLL2R = 4;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;   // 8 MHz input
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2;
   PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_CLKP;
   PeriphClkInitStruct.CecClockSelection = RCC_CECCLKSOURCE_CSI;
   PeriphClkInitStruct.CkperClockSelection = RCC_CLKPSOURCE_HSI;

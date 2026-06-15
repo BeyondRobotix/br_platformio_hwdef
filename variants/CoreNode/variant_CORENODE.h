@@ -323,6 +323,15 @@
   #define PIN_SERIAL_TX         PE1
 #endif
 
+// External oscillator: 24 MHz crystal on CoreNode. The HAL/CMSIS default is
+// 25 MHz, which makes every HSE-based clock calculation ~4% off (e.g. the
+// FDCAN kernel-clock math the CAN-FD bit-timing solver depends on). Define the
+// true value here so it is seen before any HAL header (matches the H723
+// variant header convention; replaces the old -DHSE_VALUE board build flag).
+#ifndef HSE_VALUE
+  #define HSE_VALUE             24000000U
+#endif
+
 // Extra HAL modules
 #if !defined(HAL_DAC_MODULE_DISABLED)
   #define HAL_DAC_MODULE_ENABLED
