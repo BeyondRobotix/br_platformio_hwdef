@@ -2,9 +2,9 @@
   "build": {
     "core": "stm32",
     "cpu": "cortex-m7",
-    "extra_flags": "-DSTM32H7 -DSTM32H7xx -DSTM32H723xx -DACANFD -DARDUINO_GENERIC_H723ZGTX -DARDUINO_NUCLEO_H723ZG -DBOARD_FLASH_SIZE=1024 -DCANARD_ENABLE_CANFD=1",
+    "extra_flags": "-DSTM32H7 -DSTM32H7xx -DSTM32H723xx -DACANFD -DARDUINO_GENERIC_H723VGHX -DARDUINO_NUCLEO_H723ZG -DBOARD_FLASH_SIZE=1024 -DCANARD_ENABLE_CANFD=1",
     "f_cpu": "550000000L",
-    "mcu": "stm32h723zgt6",
+    "mcu": "stm32h723vgh6",
     "product_line": "STM32H723xx",
     "variant": "MicroNodePlus"
   },
@@ -16,7 +16,7 @@
     "default_tools": [
       "stlink"
     ],
-    "jlink_device": "STM32H723ZG",
+    "jlink_device": "STM32H723VG",
     "onboard_tools": [
       "stlink"
     ],
