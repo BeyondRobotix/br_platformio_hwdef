@@ -102,6 +102,32 @@
 #define PC2_C                   PIN_A14
 #define PC3_C                   PIN_A15
 
+/*----------------------------------------------------------------------------
+ *  Board peripheral connector aliases (MicroNodePlus)
+ *  Names match the "Micro Node Plus Attempt 2" schematic nets so application
+ *  code can address a connector pin by its silkscreen label, e.g.
+ *  analogWrite(PWM1, ...) or digitalWrite(SPI_CS1, LOW).
+ *--------------------------------------------------------------------------*/
+// PWM header (J5). PWM1-3 = TIM2_CH4/3/2, PWM4 = TIM1_CH3, PWM5/6 = TIM1_CH2/1,
+// PWM7/8 = TIM3_CH2/1. (Numbering is by connector pin, not timer channel.)
+#define PWM1                    PA3
+#define PWM2                    PA2
+#define PWM3                    PA1
+#define PWM4                    PE13
+#define PWM5                    PA9
+#define PWM6                    PA8
+#define PWM7                    PC7
+#define PWM8                    PC6
+
+// SPI connector (J8) control lines — plain GPIO alongside the SPI4 bus pins
+// (SCK=PE2/MISO=PE5/MOSI=PE6, see the SPI definitions section below).
+#define SPI_CS1                 PD15
+#define SPI_CS2                 PD14
+#define SPI_SYNC                PD13
+#define SPI_DRDY1               PD12
+#define SPI_DRDY2               PD11
+#define SPI_nRESET              PD10
+
 // Alternate pins number
 #define PA0_ALT1                (PA0  | ALT1)
 #define PA1_ALT1                (PA1  | ALT1)
@@ -172,11 +198,15 @@
 #endif
 
 // SPI definitions
+// The board SPI connector (J8) is wired to SPI4: SCK=PE2, MISO=PE5, MOSI=PE6
+// (AF5). The default SPI object therefore targets SPI4. Chip-selects are plain
+// GPIO exposed as SPI_CS1/SPI_CS2 below; PIN_SPI_SS defaults to CS1 so a bare
+// SPI transaction toggles the first connector CS.
 #ifndef PIN_SPI_SS
-  #define PIN_SPI_SS            PA4
+  #define PIN_SPI_SS            PD15   // SPI_CS1
 #endif
 #ifndef PIN_SPI_SS1
-  #define PIN_SPI_SS1           PA15
+  #define PIN_SPI_SS1           PD14   // SPI_CS2
 #endif
 #ifndef PIN_SPI_SS2
   #define PIN_SPI_SS2           PNUM_NOT_DEFINED
@@ -185,21 +215,22 @@
   #define PIN_SPI_SS3           PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_SPI_MOSI
-  #define PIN_SPI_MOSI          PA7
+  #define PIN_SPI_MOSI          PE6
 #endif
 #ifndef PIN_SPI_MISO
-  #define PIN_SPI_MISO          PA6
+  #define PIN_SPI_MISO          PE5
 #endif
 #ifndef PIN_SPI_SCK
-  #define PIN_SPI_SCK           PA5
+  #define PIN_SPI_SCK           PE2
 #endif
 
 // I2C definitions
+// The board I2C connector is wired to I2C2: SCL=PB10, SDA=PB11 (AF4).
 #ifndef PIN_WIRE_SDA
-  #define PIN_WIRE_SDA          PB7
+  #define PIN_WIRE_SDA          PB11
 #endif
 #ifndef PIN_WIRE_SCL
-  #define PIN_WIRE_SCL          PB6
+  #define PIN_WIRE_SCL          PB10
 #endif
 
 // Timer Definitions
