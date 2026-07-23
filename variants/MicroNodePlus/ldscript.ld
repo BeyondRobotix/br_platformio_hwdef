@@ -25,7 +25,21 @@ MEMORY
   ITCMRAM (xrw)    : ORIGIN = 0x00000000, LENGTH = 64K
   BOOTCOM (rw)     : ORIGIN = 0x20000000, LENGTH = 0x100
   DTCMRAM (xrw)    : ORIGIN = 0x20000100, LENGTH = 128K - 0x100
-  FLASH    (rx)    : ORIGIN = 0x08020000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - 0x20000 - LD_FLASH_OFFSET
+  /*
+   * The top 4 sectors (4-7, 0x08080000-0x08100000, 512 KB) are reserved for
+   * parameter storage -- two ping-pong pairs, PORT1 = (4,5), PORT2 = (6,7).
+   * See STORAGE_FLASH_PAGE in boards/MicroNodePlus.json.
+   *
+   * Unlike L4, storage cannot be tucked into the bootloader reserve here: that
+   * whole 128 KB region is a single H7 sector, so erasing storage would erase
+   * the bootloader with it. Top of flash is the next best place, and reserving
+   * it in the linker is what stops the app growing into it.
+   *
+   * This leaves 384 KB for the app (currently ~62 KB). If that ever gets
+   * tight, dropping PORT2 storage frees 256 KB: set STORAGE_FLASH_PAGE to 6
+   * and change the reservation below to 0x40000.
+   */
+  FLASH    (rx)    : ORIGIN = 0x08020000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - 0x20000 - 0x80000 - LD_FLASH_OFFSET
   RAM_D1  (xrw)    : ORIGIN = 0x24000000, LENGTH = LD_MAX_DATA_SIZE
   RAM_D2  (xrw)    : ORIGIN = 0x30000000, LENGTH = 32K
   RAM_D3  (xrw)    : ORIGIN = 0x38000000, LENGTH = 16K
