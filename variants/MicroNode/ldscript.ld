@@ -48,7 +48,30 @@ MEMORY
   BOOTCOM (rw)    : ORIGIN = 0x20000000, LENGTH = 0x100
   RAM    (xrw)    : ORIGIN = 0x20000100,   LENGTH = LD_MAX_DATA_SIZE - 0x100
   RAM2    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
-  FLASH    (rx)    : ORIGIN = 0x800A000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - LD_FLASH_OFFSET
+  /*
+   * App starts at 0x0800A000 (40 KB), after the BR_bootloader reserve, and
+   * stops 4 KB short of the end of flash.
+   *
+   * Two corrections are folded into this LENGTH:
+   *
+   *  - LD_MAX_SIZE is the whole chip (256 KB), not the space remaining after
+   *    the bootloader, so the 0xA000 offset must be subtracted. Previously it
+   *    was not, declaring FLASH as 256 KB starting at 0x0800A000 -- 40 KB past
+   *    the end of the part, so an overflow would not have been caught.
+   *
+   *  - The last two pages (126-127, 0x0803F000-0x08040000) hold parameter
+   *    storage: one ping-pong pair, see STORAGE_FLASH_PAGE in
+   *    boards/MicroNode.json. Reserving them here is what stops the app
+   *    growing into them; before, nothing did.
+   *
+   * Net app region: 256 - 40 - 4 = 212 KB (app is currently ~42 KB).
+   *
+   * ArduPilot puts the equivalent region in the tail of the bootloader
+   * reserve instead (MatekL431, STORAGE_FLASH_PAGE 18). That is not viable
+   * here: BR_bootloader is ~36 KB, so carving 4 KB out of its 40 KB reserve
+   * would leave under 1 KB of headroom.
+   */
+  FLASH    (rx)    : ORIGIN = 0x800A000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - 0xA000 - 0x1000 - LD_FLASH_OFFSET
 }
 
 /* Sections */
