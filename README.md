@@ -9,6 +9,12 @@ PlatformIO platform (`br-stm32`) providing board definitions, variants, linker s
 | MicroNode | STM32L431 | 80 MHz | 256 KB |
 | CoreNode | STM32H743 | 480 MHz | 2 MB |
 | MicroNodePlus | STM32H723 | 550 MHz | 1 MB |
+| MicroNodeC5 | STM32C532 | 144 MHz | 256 KB |
+
+> **MicroNodeC5 is unverified.** It targets STM32C5's new "HAL2" driver
+> generation, has no real Beyond Robotix schematic yet (pin choices are
+> placeholders), and has not been build- or hardware-tested. See
+> `variants/MicroNodeC5/` file comments for details before relying on it.
 
 ## Usage
 

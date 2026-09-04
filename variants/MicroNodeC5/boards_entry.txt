@@ -1,0 +1,17 @@
+# This file help to add generic board entry.
+# upload.maximum_size and product_line have to be verified
+# and changed if needed.
+# See: https://github.com/stm32duino/Arduino_Core_STM32/wiki/Add-a-new-variant-%28board%29
+#
+# NOTE (Beyond Robotix): based on ST's own GENERIC_C532CCTX entry
+# (Arduino_Core_STM32 3.0.0, variants/STM32C5xx/C532C(B-C)(T-U)_C542CC(T-U)/boards_entry.txt),
+# with build.variant repointed at this repo's own MicroNodeC5 folder.
+
+# Beyond Robotix Micro Node C5 (STM32C532CCTx)
+GenC5.menu.pnum.MICRONODEC5=Beyond Robotix Micro Node C5
+GenC5.menu.pnum.MICRONODEC5.upload.maximum_size=262144
+GenC5.menu.pnum.MICRONODEC5.upload.maximum_data_size=65536
+GenC5.menu.pnum.MICRONODEC5.build.board=MICRONODEC5
+GenC5.menu.pnum.MICRONODEC5.build.product_line=STM32C532xx
+GenC5.menu.pnum.MICRONODEC5.build.variant=MicroNodeC5
+GenC5.menu.pnum.MICRONODEC5.debug.svd_file={runtime.tools.STM32_SVD.path}/svd/STM32C5xx/STM32C532.svd

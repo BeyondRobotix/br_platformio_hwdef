@@ -28,6 +28,12 @@ BOARDS = {
     "MicroNode":     ("target/stm32l4x.cfg", "0x0800A000", "MicroNode/bootloader.bin"),
     "MicroNodePlus": ("target/stm32h7x.cfg", "0x08020000", "MicroNodePlus/bootloader.bin"),
     "CoreNode":      ("target/stm32h7x.cfg", "0x08020000", "CoreNode/bootloader.bin"),
+    # NOTE (Beyond Robotix): "target/stm32c5x.cfg" is a guess -- confirm the pinned
+    # tool-openocd package actually ships a config for this brand-new chip family
+    # before relying on it. variants/MicroNodeC5/bootloader.bin does not exist yet;
+    # it must be built from BR_bootloader and distributed here first (see the
+    # missing-binary error message below).
+    "MicroNodeC5":   ("target/stm32c5x.cfg", "0x0800A000", "MicroNodeC5/bootloader.bin"),
 }
 
 board = env.subst("$BOARD")
